@@ -3,16 +3,31 @@ import { isPlatformBrowser } from '@angular/common';
 import { Product } from '../../shared/models/catalog.models';
 
 export interface CartItem {
+  productId: string;
   slug: string;
   title: string;
-  price: number | null;
+  /** Integer paise copied for display only; the backend recalculates at checkout. */
+  pricePaise: number | null;
+  currency: 'INR';
 }
 
-const KEY = 'tq-cart-v1';
+const KEY = 'tq-cart-v2';
+
+function isCartItem(value: unknown): value is CartItem {
+  if (!value || typeof value !== 'object') return false;
+
+  const item = value as Partial<CartItem>;
+  return typeof item.productId === 'string'
+    && typeof item.slug === 'string'
+    && typeof item.title === 'string'
+    && (item.pricePaise === null || (Number.isSafeInteger(item.pricePaise) && item.pricePaise >= 0))
+    && item.currency === 'INR';
+}
 
 /**
- * Prototype cart (browser storage only). The real price and order are always
- * re-checked by the backend at checkout; nothing here is trusted for payment.
+ * Browser cart for the shopping experience. It is not an order record and is
+ * never trusted for pricing or payment. The backend validates product status
+ * and current price when it creates an order.
  */
 @Injectable({ providedIn: 'root' })
 export class CartService {
@@ -22,40 +37,67 @@ export class CartService {
 
   readonly items = this._items.asReadonly();
   readonly count = computed(() => this._items().length);
-  /** null when any item has no price yet */
+  /** Total in paise; null if an item has not been priced yet. */
   readonly total = computed(() => {
     const items = this._items();
-    return items.some((i) => i.price == null) ? null : items.reduce((s, i) => s + (i.price ?? 0), 0);
+    return items.some((item) => item.pricePaise == null)
+      ? null
+      : items.reduce((sum, item) => sum + (item.pricePaise ?? 0), 0);
   });
 
   constructor() {
-    // Load after hydration so server and browser HTML match
+    // Load after hydration so server and browser HTML match.
     afterNextRender(() => {
       try {
         const raw = localStorage.getItem(KEY);
-        if (raw) this._items.set(JSON.parse(raw));
-      } catch { /* storage unavailable: start empty */ }
+        if (raw) {
+          const parsed: unknown = JSON.parse(raw);
+          this._items.set(Array.isArray(parsed) ? parsed.filter(isCartItem) : []);
+        }
+      } catch {
+        // Storage unavailable or invalid: start with an empty cart.
+      }
       this.ready = true;
     });
+
     effect(() => {
       const items = this._items();
       if (!this.browser || !this.ready) return;
-      try { localStorage.setItem(KEY, JSON.stringify(items)); } catch { /* ignore */ }
+
+      try {
+        localStorage.setItem(KEY, JSON.stringify(items));
+      } catch {
+        // Ignore storage quota / privacy-mode errors.
+      }
     });
   }
 
   has(slug: string | undefined): boolean {
-    return !!slug && this._items().some((i) => i.slug === slug);
+    return !!slug && this._items().some((item) => item.slug === slug);
   }
 
-  add(p: Product): void {
-    if (this.has(p.slug)) return; // digital report: one per product
-    this._items.update((l) => [...l, { slug: p.slug, title: p.title, price: p.price }]);
+  add(product: Product): void {
+    // Unpublished or unpriced products cannot enter a purchasable cart.
+    if (product.status !== 'published' || product.pricePaise == null) return;
+    if (this._items().some((item) => item.productId === product.id)) return;
+
+    this._items.update((items) => [
+      ...items,
+      {
+        productId: product.id,
+        slug: product.slug,
+        title: product.title,
+        pricePaise: product.pricePaise,
+        currency: product.currency,
+      },
+    ]);
   }
 
-  remove(slug: string): void {
-    this._items.update((l) => l.filter((i) => i.slug !== slug));
+  remove(productId: string): void {
+    this._items.update((items) => items.filter((item) => item.productId !== productId));
   }
 
-  clear(): void { this._items.set([]); }
+  clear(): void {
+    this._items.set([]);
+  }
 }

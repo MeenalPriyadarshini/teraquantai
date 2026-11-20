@@ -36,10 +36,12 @@
 
         <div class="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-brand-100 pt-6">
           <div>
-            <p class="text-2xl font-extrabold text-ink-900">{{ p.price | inr }}</p>
+            <p class="text-2xl font-extrabold text-ink-900">{{ p.pricePaise | inr }}</p>
             <p class="text-xs text-ink-500">One-time purchase</p>
           </div>
-          @if (inCart()) {
+          @if (p.pricePaise == null) {
+            <button type="button" class="btn-primary cursor-not-allowed opacity-50" disabled>Pricing coming soon</button>
+          } @else if (inCart()) {
             <a routerLink="/cart" class="btn-outline"><app-icon name="check" class="size-4" /> Added · View cart</a>
           } @else {
             <button type="button" class="btn-primary" (click)="cart.add(p)"><app-icon name="cart" class="size-4" /> Add to Cart</button>

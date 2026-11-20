@@ -4,7 +4,7 @@
   @if (cart.items().length) {
     <div class="grid gap-6 lg:grid-cols-3">
       <ul class="space-y-3 lg:col-span-2">
-        @for (i of cart.items(); track i.slug) {
+        @for (i of cart.items(); track i.productId) {
           <li class="card flex items-center justify-between gap-4 p-5">
             <div class="flex min-w-0 items-center gap-4">
               <span class="grid size-12 shrink-0 place-items-center rounded-2xl bg-brand-50 text-brand-600"><app-icon name="chart" class="size-6" /></span>
@@ -14,8 +14,8 @@
               </div>
             </div>
             <div class="flex items-center gap-4">
-              <span class="text-sm font-semibold text-ink-900">{{ i.price | inr }}</span>
-              <button type="button" (click)="cart.remove(i.slug)" [attr.aria-label]="'Remove ' + i.title"
+              <span class="text-sm font-semibold text-ink-900">{{ i.pricePaise | inr }}</span>
+              <button type="button" (click)="cart.remove(i.productId)" [attr.aria-label]="'Remove ' + i.title"
                       class="grid size-9 place-items-center rounded-full text-ink-500 ring-1 ring-brand-100 hover:bg-brand-50 hover:text-ink-900">
                 <app-icon name="trash" class="size-4" />
               </button>

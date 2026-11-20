@@ -7,7 +7,7 @@ import { ProductImage } from './product-image';
 
 /**
  * One card, two looks: a real product, or an empty "coming soon" slot.
- * Slots are filled just by adding the product to the data source.
+ * Real products are populated by the catalogue service, not by page components.
  */
 @Component({
   selector: 'app-product-card',
@@ -32,7 +32,7 @@ import { ProductImage } from './product-image';
             @if (product().frequency) { <div class="flex items-center gap-2"><app-icon name="clock" class="size-4 text-brand-600" /><dd>{{ product().frequency }}</dd></div> }
           </dl>
           <div class="mt-auto flex items-center justify-between pt-5">
-            <span class="text-sm font-semibold text-ink-900">{{ product().price | inr }}</span>
+            <span class="text-sm font-semibold text-ink-900">{{ product().pricePaise | inr }}</span>
             <a [routerLink]="['/solutions', product().slug]" class="btn-primary px-4! py-2!">
               View details <app-icon name="arrow-right" class="size-4" />
             </a>
