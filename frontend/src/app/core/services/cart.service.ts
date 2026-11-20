@@ -17,10 +17,15 @@ function isCartItem(value: unknown): value is CartItem {
   if (!value || typeof value !== 'object') return false;
 
   const item = value as Partial<CartItem>;
+  const validPrice = item.pricePaise === null
+    || (typeof item.pricePaise === 'number'
+      && Number.isSafeInteger(item.pricePaise)
+      && item.pricePaise >= 0);
+
   return typeof item.productId === 'string'
     && typeof item.slug === 'string'
     && typeof item.title === 'string'
-    && (item.pricePaise === null || (Number.isSafeInteger(item.pricePaise) && item.pricePaise >= 0))
+    && validPrice
     && item.currency === 'INR';
 }
 
