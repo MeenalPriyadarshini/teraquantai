@@ -30,11 +30,17 @@ import { AuthService } from '../../core/services/auth.service';
         </article>
         <article class="card p-6">
           <h2 class="text-lg font-bold text-ink-900">My purchases</h2>
-          <p class="mt-2 text-sm text-ink-500">Your verified orders and report downloads will appear here.</p>
-          <p class="mt-4 text-xs text-ink-500">Purchase history is being connected to the backend.</p>
-          <a routerLink="/solutions" class="btn-outline mt-5">Browse solutions</a>
+          <p class="mt-2 text-sm text-ink-500">View your payment status and download verified purchases.</p>
+          <a routerLink="/account/orders" class="btn-outline mt-5">View my orders</a>
         </article>
       </div>
+      @if (auth.isAdmin()) {
+        <article class="card mt-5 p-6">
+          <h2 class="text-lg font-bold text-ink-900">Administration</h2>
+          <p class="mt-2 text-sm text-ink-500">Manage catalogue and review payment submissions.</p>
+          <a routerLink="/admin" class="btn-outline mt-4">Open admin dashboard</a>
+        </article>
+      }
       @if (error()) {
         <p role="alert" class="mt-5 rounded-xl bg-red-50 p-3 text-sm text-red-700">{{ error() }}</p>
       }

@@ -33,10 +33,10 @@
           <span class="font-semibold text-ink-900">Total</span>
           <span class="text-lg font-extrabold text-ink-900">{{ cart.total() | inr }}</span>
         </div>
-        <button type="button" class="btn-primary mt-6 w-full opacity-60" disabled>Checkout (coming soon)</button>
+        <a routerLink="/checkout" class="btn-primary mt-6 w-full justify-center">Proceed to checkout</a>
         <p class="mt-3 flex items-start gap-2 text-xs text-ink-500">
           <app-icon name="info" class="mt-0.5 size-4 shrink-0 text-brand-600" />
-          Online payment is not enabled yet. This is a preview of the checkout flow.
+          Final prices and availability are confirmed by the server at checkout.
         </p>
       </aside>
     </div>
