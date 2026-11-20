@@ -1,0 +1,143 @@
+<div class="container-page py-8">
+  <a routerLink="/solutions" class="inline-flex items-center gap-2 text-sm font-medium text-ink-700 hover:text-brand-700">
+    <app-icon name="arrow-left" class="size-4" /> Back to Solutions
+  </a>
+
+  @if (res.isLoading()) {
+    <div class="mt-8 grid gap-8 lg:grid-cols-2" aria-busy="true">
+      <div class="aspect-4/3 animate-pulse rounded-3xl bg-brand-50"></div>
+      <div class="space-y-4"><div class="h-6 w-32 animate-pulse rounded bg-brand-50"></div><div class="h-10 w-3/4 animate-pulse rounded bg-brand-50"></div><div class="h-20 animate-pulse rounded bg-brand-50"></div></div>
+    </div>
+  } @else if (product(); as p) {
+
+    <!-- Top section -->
+    <div class="mt-6 grid items-center gap-8 lg:grid-cols-2 lg:gap-12">
+      <app-product-image class="aspect-4/3 rounded-3xl shadow-card ring-1 ring-brand-100" [slug]="p.slug" [imageUrl]="p.imageUrl" [alt]="p.title" />
+
+      <div>
+        <span class="badge"><app-icon name="sparkle" class="size-3.5" /> {{ categoryName() }}</span>
+        <h1 class="mt-4 text-3xl font-extrabold tracking-tight sm:text-4xl">{{ p.title }}</h1>
+        <p class="mt-3 text-lg text-ink-700">{{ p.summary }}</p>
+
+        <dl class="mt-6 grid gap-4 sm:grid-cols-3">
+          @if (p.period) {
+            <div class="flex items-start gap-2.5"><app-icon name="calendar" class="mt-0.5 size-5 text-brand-600" />
+              <div><dt class="sr-only">Coverage period</dt><dd class="text-sm font-medium text-ink-900">{{ p.period }}</dd></div></div>
+          }
+          @if (p.frequency) {
+            <div class="flex items-start gap-2.5"><app-icon name="clock" class="mt-0.5 size-5 text-brand-600" />
+              <div><dt class="sr-only">Frequency</dt><dd class="text-sm font-medium text-ink-900">{{ p.frequency }}</dd></div></div>
+          }
+          @if (p.market) {
+            <div class="flex items-start gap-2.5"><app-icon name="pin" class="mt-0.5 size-5 text-brand-600" />
+              <div><dt class="sr-only">Market</dt><dd class="text-sm font-medium text-ink-900">{{ p.market }}</dd></div></div>
+          }
+        </dl>
+
+        <div class="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-brand-100 pt-6">
+          <div>
+            <p class="text-2xl font-extrabold text-ink-900">{{ p.price | inr }}</p>
+            <p class="text-xs text-ink-500">One-time purchase</p>
+          </div>
+          @if (inCart()) {
+            <a routerLink="/cart" class="btn-outline"><app-icon name="check" class="size-4" /> Added · View cart</a>
+          } @else {
+            <button type="button" class="btn-primary" (click)="cart.add(p)"><app-icon name="cart" class="size-4" /> Add to Cart</button>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    @if (p.details; as d) {
+      <div role="tablist" aria-label="Solution details" class="mt-12 inline-flex max-w-full flex-wrap gap-1 rounded-full bg-white/80 p-1 ring-1 ring-brand-100">
+        @for (t of tabs; track t.id) {
+          <button type="button" role="tab" [id]="'tab-' + t.id" [attr.aria-selected]="tab() === t.id"
+                  [attr.aria-controls]="'panel-' + t.id" [attr.tabindex]="tab() === t.id ? 0 : -1"
+                  (click)="tab.set(t.id)" (keydown)="onTabKey($event)"
+                  class="rounded-full px-5 py-2 text-sm font-semibold transition"
+                  [class]="tab() === t.id ? 'bg-brand-800 text-white' : 'text-ink-700 hover:bg-brand-50'">{{ t.label }}</button>
+        }
+      </div>
+
+      <div class="mt-6" role="tabpanel" [id]="'panel-' + tab()" [attr.aria-labelledby]="'tab-' + tab()" tabindex="0">
+        @switch (tab()) {
+          @case ('overview') {
+            <div class="grid gap-6 lg:grid-cols-3">
+              <div class="card p-6 lg:col-span-2 sm:p-8">
+                <h2 class="text-xl font-bold">About This Solution</h2>
+                <p class="mt-3 leading-relaxed">{{ d.about }}</p>
+                <ul class="mt-5 space-y-3">
+                  @for (h of d.highlights; track h) {
+                    <li class="flex items-center gap-3 text-sm font-medium text-ink-900">
+                      <span class="grid size-6 place-items-center rounded-full bg-brand-100 text-brand-700"><app-icon name="check" class="size-3.5" /></span>{{ h }}
+                    </li>
+                  }
+                </ul>
+              </div>
+              <aside class="rounded-card bg-brand-50 p-6 ring-1 ring-brand-100 sm:p-8">
+                <h2 class="text-xl font-bold">Perfect For</h2>
+                <ul class="mt-4 space-y-3">
+                  @for (x of d.perfectFor; track x) {
+                    <li class="flex items-center gap-3 text-sm font-medium text-ink-900">
+                      <span class="grid size-6 place-items-center rounded-full bg-white text-brand-700"><app-icon name="check" class="size-3.5" /></span>{{ x }}
+                    </li>
+                  }
+                </ul>
+              </aside>
+            </div>
+          }
+          @case ('what') {
+            <div class="card p-6 sm:p-8">
+              <h2 class="text-xl font-bold">What You Get</h2>
+              <ul class="mt-4 space-y-3">
+                @for (x of d.whatYouGet; track x) {
+                  <li class="flex items-start gap-3 text-sm text-ink-900">
+                    <span class="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-brand-100 text-brand-700"><app-icon name="check" class="size-3.5" /></span>{{ x }}
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+          @case ('specs') {
+            <div class="card overflow-hidden">
+              <h2 class="px-6 pt-6 text-xl font-bold sm:px-8">Specifications</h2>
+              <dl class="mt-4 divide-y divide-brand-100">
+                @for (s of d.specs; track s.label) {
+                  <div class="grid gap-1 px-6 py-3 text-sm sm:grid-cols-3 sm:px-8">
+                    <dt class="font-semibold text-ink-900">{{ s.label }}</dt>
+                    <dd class="sm:col-span-2">{{ s.value }}</dd>
+                  </div>
+                }
+              </dl>
+            </div>
+          }
+          @case ('faqs') {
+            <div class="space-y-3">
+              @for (f of d.faqs; track f.q) {
+                <details class="card group p-5">
+                  <summary class="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold text-ink-900">
+                    {{ f.q }}<app-icon name="chevron-down" class="size-4 transition group-open:rotate-180" />
+                  </summary>
+                  <p class="mt-3 text-sm leading-relaxed">{{ f.a }}</p>
+                </details>
+              }
+            </div>
+          }
+        }
+      </div>
+    }
+
+    <p class="mt-8 flex items-start gap-2 rounded-2xl bg-white/70 p-4 text-xs text-ink-500 ring-1 ring-brand-100">
+      <app-icon name="info" class="mt-0.5 size-4 shrink-0 text-brand-600" />
+      Forecasts and insights are estimates based on available information and are not guaranteed outcomes.
+    </p>
+
+  } @else {
+    <div class="mx-auto max-w-md py-20 text-center">
+      <h1 class="text-2xl font-bold">Solution not found</h1>
+      <p class="mt-2 text-ink-500">This solution may have moved or is not available yet.</p>
+      <a routerLink="/solutions" class="btn-primary mt-6">Browse solutions</a>
+    </div>
+  }
+</div>

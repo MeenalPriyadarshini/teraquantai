@@ -1,0 +1,80 @@
+<a href="#main" class="sr-only rounded-full bg-brand-800 px-4 py-2 text-white focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50">
+  Skip to main content
+</a>
+
+<header class="sticky top-0 z-40 px-3 pt-3 sm:px-6">
+  <div class="container-page px-0!">
+    <div class="flex items-center justify-between gap-3 rounded-full bg-white/90 px-4 py-2 shadow-soft ring-1 ring-brand-100 backdrop-blur lg:px-6">
+      <a routerLink="/" aria-label="TerraQuantAI — home" (click)="close()"><app-logo /></a>
+
+      <!-- Desktop navigation -->
+      <nav class="hidden items-center gap-1 lg:flex" aria-label="Primary">
+        @for (item of nav; track item.label) {
+          <div class="group relative">
+            <a [routerLink]="item.path" routerLinkActive="bg-brand-800! text-white!"
+               [routerLinkActiveOptions]="{ exact: !!item.exact }"
+               class="flex items-center gap-1 rounded-full px-4 py-2 text-sm font-semibold text-ink-900 transition hover:bg-brand-50">
+              {{ item.label }}
+              @if (item.children) { <app-icon name="chevron-down" class="size-3.5" /> }
+            </a>
+            @if (item.children) {
+              <ul class="invisible absolute left-0 top-full z-50 mt-2 min-w-52 rounded-2xl bg-white p-2 opacity-0 shadow-card ring-1 ring-brand-100 transition group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100">
+                @for (child of item.children; track child.label) {
+                  <li>
+                    <a [routerLink]="child.path" [queryParams]="child.query"
+                       class="block rounded-xl px-4 py-2 text-sm font-medium text-ink-900 hover:bg-brand-50">{{ child.label }}</a>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+        }
+      </nav>
+
+      <div class="flex items-center gap-2">
+        <a routerLink="/solutions" aria-label="Search solutions"
+           class="hidden size-10 place-items-center rounded-full bg-white text-ink-900 ring-1 ring-brand-100 hover:bg-brand-50 sm:grid">
+          <app-icon name="search" class="size-5" />
+        </a>
+        <a routerLink="/cart" [attr.aria-label]="'Cart, ' + cart.count() + ' items'"
+           class="relative grid size-10 place-items-center rounded-full bg-white text-ink-900 ring-1 ring-brand-100 hover:bg-brand-50">
+          <app-icon name="cart" class="size-5" />
+          @if (cart.count() > 0) {
+            <span class="absolute -right-1 -top-1 grid min-w-5 place-items-center rounded-full bg-brand-800 px-1 text-[11px] font-bold leading-5 text-white">{{ cart.count() }}</span>
+          }
+        </a>
+        <a routerLink="/login" class="btn-primary px-5! py-2.5!">Login</a>
+        <button type="button" (click)="toggle()" [attr.aria-expanded]="menuOpen()" aria-controls="mobile-menu"
+                aria-label="Toggle menu"
+                class="grid size-10 place-items-center rounded-full ring-1 ring-brand-100 hover:bg-brand-50 lg:hidden">
+          <app-icon [name]="menuOpen() ? 'close' : 'menu'" class="size-5" />
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile navigation -->
+    @if (menuOpen()) {
+      <nav id="mobile-menu" aria-label="Mobile" class="mt-2 rounded-3xl bg-white p-3 shadow-card ring-1 ring-brand-100 lg:hidden">
+        <ul class="space-y-1">
+          @for (item of nav; track item.label) {
+            <li>
+              <a [routerLink]="item.path" (click)="close()" routerLinkActive="bg-brand-50 text-brand-800"
+                 [routerLinkActiveOptions]="{ exact: !!item.exact }"
+                 class="block rounded-xl px-4 py-3 text-sm font-semibold text-ink-900">{{ item.label }}</a>
+              @if (item.children) {
+                <ul class="ml-4 border-l border-brand-100 pl-2">
+                  @for (child of item.children; track child.label) {
+                    <li>
+                      <a [routerLink]="child.path" [queryParams]="child.query" (click)="close()"
+                         class="block rounded-lg px-3 py-2 text-sm text-ink-700">{{ child.label }}</a>
+                    </li>
+                  }
+                </ul>
+              }
+            </li>
+          }
+        </ul>
+      </nav>
+    }
+  </div>
+</header>

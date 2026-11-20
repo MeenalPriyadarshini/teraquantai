@@ -1,0 +1,121 @@
+<!-- HERO -->
+<section class="relative isolate flex min-h-[30rem] items-center overflow-hidden lg:min-h-[36rem]">
+  <picture class="absolute inset-0 -z-20">
+    <source type="image/webp" srcset="images/hero-bg.webp" />
+    <img src="images/hero-bg.jpg" alt="" width="1920" height="800" fetchpriority="high"
+         class="h-full w-full object-cover object-[70%_center]" />
+  </picture>
+  <!-- readability overlay: strong on mobile, fades left-to-right on desktop -->
+  <div class="absolute inset-0 -z-10 bg-white/80 lg:bg-white/0 lg:bg-linear-to-r lg:from-white lg:from-40% lg:via-white/70 lg:via-60% lg:to-transparent lg:to-85%"></div>
+
+  <div class="container-page py-14 lg:py-24">
+    <div class="max-w-xl">
+      <span class="badge"><app-icon name="sparkle" class="size-3.5" /> AI-Powered Intelligence</span>
+      <h1 class="mt-5 text-4xl font-extrabold leading-[1.1] tracking-tight sm:text-5xl lg:text-6xl">
+        Intelligence<br /><span class="text-gradient">That Moves Markets.</span>
+      </h1>
+      <p class="mt-5 text-lg leading-relaxed text-ink-700">
+        Explore specialized AI-powered forecasting and insights for agriculture, energy, markets and beyond.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-3">
+        <a routerLink="/solutions" class="btn-primary">Explore Solutions <app-icon name="arrow-right" class="size-4" /></a>
+        <a routerLink="/about" class="btn-outline">
+          <span class="grid size-5 place-items-center rounded-full bg-brand-800 text-white"><app-icon name="play" class="size-3" /></span>
+          Learn More
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CATEGORIES -->
+<section class="container-page py-12" aria-labelledby="cat-title">
+  <h2 id="cat-title" class="section-title">Explore Our Intelligence Solutions</h2>
+  <ul class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+    @for (c of categories(); track c.slug) {
+      <li>
+        <a routerLink="/solutions" [queryParams]="{ category: c.slug }"
+           class="group relative flex h-full flex-col rounded-card bg-linear-to-br p-6 shadow-soft ring-1 ring-white transition hover:-translate-y-1 hover:shadow-card"
+           [class]="c.tint">
+          <span class="grid size-12 place-items-center rounded-2xl bg-white shadow-soft" [class]="c.iconColor">
+            <app-icon [name]="c.icon" class="size-6" />
+          </span>
+          <h3 class="mt-5 text-lg font-bold">{{ c.name }}</h3>
+          <p class="mt-1 text-sm text-ink-500">{{ c.blurb }}</p>
+          <span class="mt-5 grid size-9 place-items-center self-end rounded-full bg-brand-800 text-white transition group-hover:translate-x-1">
+            <app-icon name="arrow-right" class="size-4" />
+          </span>
+        </a>
+      </li>
+    }
+  </ul>
+</section>
+
+<!-- FEATURED SOLUTIONS (empty slots are filled by adding products to the data source) -->
+<section class="container-page py-12" aria-labelledby="feat-title">
+  <h2 id="feat-title" class="section-title">Featured Solutions</h2>
+  <ul class="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    @for (p of featured(); track p.slug) {
+      <li><app-product-card [product]="p" /></li>
+    }
+  </ul>
+  <div class="mt-8 text-center">
+    <a routerLink="/solutions" class="btn-outline">View all solutions <app-icon name="arrow-right" class="size-4" /></a>
+  </div>
+</section>
+
+<!-- BANNER -->
+<section class="container-page py-8">
+  <div class="relative overflow-hidden rounded-3xl bg-linear-to-br from-brand-950 via-brand-900 to-brand-700 px-6 py-12 text-white shadow-card sm:px-12">
+    <div class="relative z-10 max-w-md">
+      <h2 class="text-3xl font-extrabold leading-tight text-white! sm:text-4xl">
+        Smarter Decisions.<br /><span class="text-brand-300">Greater Opportunities.</span>
+      </h2>
+      <p class="mt-4 text-brand-100">Plan ahead with clear, AI-powered insight and manage risk with more confidence.</p>
+    </div>
+    <div class="pointer-events-none absolute inset-y-0 right-0 hidden w-1/2 items-end justify-end gap-3 px-8 pb-0 sm:flex" aria-hidden="true">
+      @for (h of bars; track $index) {
+        <div class="w-6 rounded-t-md bg-linear-to-t from-brand-500/20 to-brand-300" [style.height.%]="h"></div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="container-page py-12" aria-labelledby="how-title">
+  <h2 id="how-title" class="section-title">How It Works</h2>
+  <ol class="mt-10 grid gap-5 md:grid-cols-3">
+    @for (s of steps; track s.n) {
+      <li class="card p-6 text-center">
+        <span class="mx-auto grid size-11 place-items-center rounded-full bg-brand-800 text-base font-bold text-white">{{ s.n }}</span>
+        <h3 class="mt-4 text-lg font-bold">{{ s.title }}</h3>
+        <p class="mt-1 text-sm">{{ s.text }}</p>
+      </li>
+    }
+  </ol>
+</section>
+
+<!-- WHY CHOOSE -->
+<section class="container-page py-12" aria-labelledby="why-title">
+  <h2 id="why-title" class="section-title">Why Choose TerraQuantAI?</h2>
+  <ul class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+    @for (b of benefits; track b.title) {
+      <li class="card p-6 text-center">
+        <span class="mx-auto grid size-12 place-items-center rounded-2xl bg-brand-50 text-brand-600"><app-icon [name]="b.icon" class="size-6" /></span>
+        <h3 class="mt-4 text-base font-bold">{{ b.title }}</h3>
+        <p class="mt-1 text-sm text-ink-500">{{ b.text }}</p>
+      </li>
+    }
+  </ul>
+</section>
+
+<!-- CTA -->
+<section class="container-page pb-6 pt-4">
+  <div class="flex flex-col items-start justify-between gap-5 rounded-3xl bg-linear-to-r from-brand-800 to-brand-600 px-6 py-8 text-white sm:flex-row sm:items-center sm:px-10">
+    <div>
+      <h2 class="text-xl font-bold text-white! sm:text-2xl">Plan a Smarter, More Informed Tomorrow</h2>
+      <p class="mt-1 text-sm text-brand-100">Partner with TerraQuantAI for actionable intelligence.</p>
+    </div>
+    <a routerLink="/signup" class="btn-light">Get Started <app-icon name="arrow-right" class="size-4" /></a>
+  </div>
+</section>

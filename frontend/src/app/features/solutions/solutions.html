@@ -1,0 +1,45 @@
+<app-page-header
+  eyebrow="Solutions"
+  [title]="activeCategory()?.name ?? 'All Intelligence Solutions'"
+  [subtitle]="activeCategory() ? activeCategory()!.blurb : 'Browse AI-powered forecasting and insight solutions across markets and industries.'" />
+
+<section class="container-page pb-6">
+  <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+    <nav aria-label="Filter by category" class="flex flex-wrap gap-2">
+      <a routerLink="/solutions" [class]="chip(!category())" [attr.aria-current]="!category() ? 'true' : null">All</a>
+      @for (c of categories(); track c.slug) {
+        <a routerLink="/solutions" [queryParams]="{ category: c.slug }"
+           [class]="chip(category() === c.slug)" [attr.aria-current]="category() === c.slug ? 'true' : null">{{ c.name }}</a>
+      }
+    </nav>
+
+    <div class="relative w-full lg:max-w-xs">
+      <label for="solution-search" class="sr-only">Search solutions</label>
+      <app-icon name="search" class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-500" />
+      <input id="solution-search" type="search" placeholder="Search solutions" [value]="search()"
+             (input)="search.set($any($event.target).value)"
+             class="w-full rounded-full border border-brand-200 bg-white/80 py-2.5 pl-11 pr-4 text-sm text-ink-900 placeholder:text-ink-500" />
+    </div>
+  </div>
+
+  <p class="mt-4 text-sm text-ink-500" aria-live="polite">
+    {{ filtered().length }} {{ filtered().length === 1 ? 'solution' : 'solutions' }}
+  </p>
+</section>
+
+<section class="container-page pb-6">
+  @if (filtered().length) {
+    <ul class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      @for (p of filtered(); track p.slug) {
+        <li><app-product-card [product]="p" /></li>
+      }
+    </ul>
+  } @else {
+    <div class="mx-auto max-w-lg rounded-card border-2 border-dashed border-brand-200 bg-white/60 p-10 text-center">
+      <span class="mx-auto grid size-12 place-items-center rounded-full bg-brand-50 text-brand-600"><app-icon name="sparkle" class="size-6" /></span>
+      <h2 class="mt-4 text-lg font-bold">No solutions here yet</h2>
+      <p class="mt-1 text-sm text-ink-500">New solutions are on their way. Try another category.</p>
+      <a routerLink="/solutions" class="btn-primary mt-6">View all solutions</a>
+    </div>
+  }
+</section>

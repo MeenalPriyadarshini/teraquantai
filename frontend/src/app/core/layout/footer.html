@@ -1,0 +1,59 @@
+<footer class="mt-20 bg-brand-950 text-brand-100">
+  <div class="container-page grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-5">
+    <div class="lg:col-span-2">
+      <span class="inline-flex rounded-2xl bg-white px-4 py-3"><app-logo /></span>
+      <p class="mt-4 max-w-xs text-sm text-brand-200">
+        AI-powered forecasting and intelligence solutions for agriculture, energy, markets and industry.
+      </p>
+    </div>
+
+    <nav aria-label="Quick links">
+      <h2 class="text-sm font-bold text-white">Quick Links</h2>
+      <ul class="mt-4 space-y-2 text-sm">
+        @for (l of links.quick; track l.label) {
+          <li><a [routerLink]="l.path" class="text-brand-200 hover:text-white">{{ l.label }}</a></li>
+        }
+      </ul>
+    </nav>
+
+    <nav aria-label="Resources">
+      <h2 class="text-sm font-bold text-white">Resources</h2>
+      <ul class="mt-4 space-y-2 text-sm">
+        @for (l of links.resources; track l.label) {
+          <li><a [routerLink]="l.path" class="text-brand-200 hover:text-white">{{ l.label }}</a></li>
+        }
+      </ul>
+    </nav>
+
+    <div>
+      <h2 class="text-sm font-bold text-white">Legal</h2>
+      <ul class="mt-4 space-y-2 text-sm">
+        @for (l of links.legal; track l.label) {
+          <li><a [routerLink]="l.path" class="text-brand-200 hover:text-white">{{ l.label }}</a></li>
+        }
+      </ul>
+      @if (socials.length) {
+        <h2 class="mt-6 text-sm font-bold text-white">Connect With Us</h2>
+        <ul class="mt-3 flex gap-3">
+          @for (s of socials; track s.label) {
+            <li>
+              <a [href]="s.url" target="_blank" rel="noopener noreferrer" [attr.aria-label]="s.label"
+                 class="grid size-9 place-items-center rounded-full ring-1 ring-brand-700 hover:bg-brand-800">
+                <app-icon [name]="s.icon" class="size-4" />
+              </a>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+  </div>
+
+  <div class="border-t border-brand-800">
+    <div class="container-page flex flex-col gap-2 py-6 text-xs text-brand-300 sm:flex-row sm:items-center sm:justify-between">
+      <p>© {{ year }} {{ site.name }}. All rights reserved.</p>
+      <p class="max-w-xl sm:text-right">
+        Forecasts and insights are estimates based on available information and are not guaranteed outcomes.
+      </p>
+    </div>
+  </div>
+</footer>

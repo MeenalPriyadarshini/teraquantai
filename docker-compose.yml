@@ -1,0 +1,15 @@
+# Local development services. Not needed for the frontend-only prototype phase;
+# it becomes useful when the Spring Boot backend starts (roadmap step P onward).
+services:
+  postgres:
+    image: postgres:17
+    container_name: tq-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - ./.docker-data/postgres:/var/lib/postgresql/data
