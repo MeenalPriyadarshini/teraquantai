@@ -15,13 +15,9 @@ const KEY = 'tq-cart-v2';
 
 function isCartItem(value: unknown): value is CartItem {
   if (!value || typeof value !== 'object') return false;
-
   const item = value as Partial<CartItem>;
   const validPrice = item.pricePaise === null
-    || (typeof item.pricePaise === 'number'
-      && Number.isSafeInteger(item.pricePaise)
-      && item.pricePaise >= 0);
-
+    || (typeof item.pricePaise === 'number' && Number.isSafeInteger(item.pricePaise) && item.pricePaise >= 0);
   return typeof item.productId === 'string'
     && typeof item.slug === 'string'
     && typeof item.title === 'string'
@@ -29,11 +25,7 @@ function isCartItem(value: unknown): value is CartItem {
     && item.currency === 'INR';
 }
 
-/**
- * Browser cart for the shopping experience. It is not an order record and is
- * never trusted for pricing or payment. The backend validates product status
- * and current price when it creates an order.
- */
+/** Browser cart only; backend revalidates product state and price at order creation. */
 @Injectable({ providedIn: 'root' })
 export class CartService {
   private readonly browser = isPlatformBrowser(inject(PLATFORM_ID));
@@ -42,7 +34,6 @@ export class CartService {
 
   readonly items = this._items.asReadonly();
   readonly count = computed(() => this._items().length);
-  /** Total in paise; null if an item has not been priced yet. */
   readonly total = computed(() => {
     const items = this._items();
     return items.some((item) => item.pricePaise == null)
@@ -51,7 +42,6 @@ export class CartService {
   });
 
   constructor() {
-    // Load after hydration so server and browser HTML match.
     afterNextRender(() => {
       try {
         const raw = localStorage.getItem(KEY);
@@ -59,21 +49,13 @@ export class CartService {
           const parsed: unknown = JSON.parse(raw);
           this._items.set(Array.isArray(parsed) ? parsed.filter(isCartItem) : []);
         }
-      } catch {
-        // Storage unavailable or invalid: start with an empty cart.
-      }
+      } catch { /* Start with an empty cart if browser storage is unavailable. */ }
       this.ready = true;
     });
-
     effect(() => {
       const items = this._items();
       if (!this.browser || !this.ready) return;
-
-      try {
-        localStorage.setItem(KEY, JSON.stringify(items));
-      } catch {
-        // Ignore storage quota / privacy-mode errors.
-      }
+      try { localStorage.setItem(KEY, JSON.stringify(items)); } catch { /* Ignore storage errors. */ }
     });
   }
 
@@ -82,27 +64,22 @@ export class CartService {
   }
 
   add(product: Product): void {
-    // Unpublished or unpriced products cannot enter a purchasable cart.
-    if (product.status !== 'published' || product.pricePaise == null) return;
+    // Published but unpriced products may be placed in the cart for the
+    // customer journey preview. Checkout stays blocked until the server prices it.
+    if (product.status !== 'published') return;
     if (this._items().some((item) => item.productId === product.id)) return;
-
-    this._items.update((items) => [
-      ...items,
-      {
-        productId: product.id,
-        slug: product.slug,
-        title: product.title,
-        pricePaise: product.pricePaise,
-        currency: product.currency,
-      },
-    ]);
+    this._items.update((items) => [...items, {
+      productId: product.id,
+      slug: product.slug,
+      title: product.title,
+      pricePaise: product.pricePaise,
+      currency: product.currency,
+    }]);
   }
 
   remove(productId: string): void {
     this._items.update((items) => items.filter((item) => item.productId !== productId));
   }
 
-  clear(): void {
-    this._items.set([]);
-  }
+  clear(): void { this._items.set([]); }
 }
