@@ -25,3 +25,7 @@ backend/.gradle/
 
 # Docker volumes
 .docker-data/
+
+# Generated backend output
+backend/bin/
+*.class
