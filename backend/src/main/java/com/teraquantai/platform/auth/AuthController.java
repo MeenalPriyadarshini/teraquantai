@@ -15,8 +15,6 @@ import java.util.Base64;
 import java.util.HexFormat;
 import java.util.Map;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -28,25 +26,28 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import com.teraquantai.platform.notification.MailDeliveryService;
 
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthController {
-    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
     private final JdbcTemplate jdbc;
     private final PasswordEncoder encoder;
     private final AuthenticationManager authenticationManager;
     private final SecurityContextRepository contextRepository;
     private final SecureRandom random = new SecureRandom();
+    private final MailDeliveryService mailDeliveryService;
     private final String frontendUrl;
     private final int expiryMinutes;
 
     public AuthController(JdbcTemplate jdbc, PasswordEncoder encoder,
             AuthenticationManager authenticationManager, SecurityContextRepository contextRepository,
             @Value("${app.frontend-url}") String frontendUrl,
-            @Value("${app.security.token-expiry-minutes:30}") int expiryMinutes) {
+            @Value("${app.security.token-expiry-minutes:30}") int expiryMinutes,
+            MailDeliveryService mailDeliveryService) {
         this.jdbc = jdbc; this.encoder = encoder; this.authenticationManager = authenticationManager;
         this.contextRepository = contextRepository; this.frontendUrl = frontendUrl; this.expiryMinutes = expiryMinutes;
+        this.mailDeliveryService = mailDeliveryService;
     }
 
     public record RegisterRequest(@Email @NotBlank String email, @Size(min=8,max=100) String password) {}
@@ -70,7 +71,7 @@ public class AuthController {
         jdbc.update("insert into users(id,email,password_hash,role,email_verified) values (?,?,?,'CUSTOMER',false)",
             id, email, encoder.encode(request.password()));
         issueToken(id, "EMAIL_VERIFY", "verify-email");
-        return new MessageResponse("Account created. A verification link has been generated; check the backend console in local development.");
+        return new MessageResponse("Account created. Check your email for the verification link.");
     }
 
     @PostMapping("/login")
@@ -114,7 +115,7 @@ public class AuthController {
         jdbc.query("select id from users where email=? and email_verified=false", rs -> {
             if (rs.next()) issueToken(rs.getObject("id", UUID.class), "EMAIL_VERIFY", "verify-email");
         }, request.email().trim().toLowerCase());
-        return new MessageResponse("If the account needs verification, a new link has been generated.");
+        return new MessageResponse("If the account needs verification, a new link will be sent.");
     }
 
     @PostMapping("/password/forgot")
@@ -141,12 +142,22 @@ public class AuthController {
     }
 
     private void issueToken(UUID userId, String type, String route) {
-        byte[] bytes = new byte[32]; random.nextBytes(bytes);
+        byte[] bytes = new byte[32];
+        random.nextBytes(bytes);
         String raw = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
         jdbc.update("insert into auth_tokens(user_id,token_hash,token_type,expires_at) values (?,?,?,?)",
             userId, hash(raw), type, OffsetDateTime.now().plusMinutes(expiryMinutes));
-        // Development-only delivery. Replace with the configured mail sender before production.
-        log.warn("DEV ONLY {} link: {}/{}?token={}", type, frontendUrl, route, raw);
+
+        String email = jdbc.queryForObject("select email from users where id=?", String.class, userId);
+        String link = frontendUrl + "/" + route + "?token=" + raw;
+        String subject = "EMAIL_VERIFY".equals(type)
+            ? "Verify your TerraQuantAI email"
+            : "Reset your TerraQuantAI password";
+        String action = "EMAIL_VERIFY".equals(type) ? "verify your email address" : "reset your password";
+        String body = "Hello,\\n\\nUse the following link to " + action + ":\\n"
+            + link + "\\n\\nThis link expires in " + expiryMinutes
+            + " minutes and can be used only once. If you did not request this, ignore this email.";
+        mailDeliveryService.send(email, subject, body);
     }
 
     private UUID consumeToken(String raw, String type) {
