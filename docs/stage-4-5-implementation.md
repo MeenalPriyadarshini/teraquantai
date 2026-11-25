@@ -51,3 +51,22 @@ payment, download-log and notification-outbox tables.
   are not yet implemented.
 - No actual payment is accepted and no report download is unlocked by this
   foundation.
+
+
+## Stage 6 — Email, private storage and notification foundations
+
+Implemented on the frontend-foundation branch:
+
+- Spring Mail service sends one-time email-verification and password-reset links.
+- Docker Compose starts Mailpit for safe local email testing at `http://localhost:8025`.
+- `start-backend.ps1` loads the private root `.env`, starts PostgreSQL and Mailpit,
+  waits for PostgreSQL, and starts the backend.
+- `PrivateFileStorage` stores PDF/PPT/PPTX files outside frontend public assets,
+  generates opaque UUID-based storage keys, and enforces a configured size limit.
+- `NotificationOutboxService` writes JSON notification events to the existing
+  PostgreSQL outbox table.
+
+Not yet implemented: authenticated admin upload endpoints, file content-signature
+validation/malware scanning, customer-authorized download endpoints, an outbox
+delivery worker, and payment submission/review. The storage service must not be
+exposed directly to anonymous callers.
