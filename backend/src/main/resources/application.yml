@@ -12,7 +12,7 @@ spring:
   application:
     name: teraquantai-backend
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/teraquantai}
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5433/teraquantai}
     username: ${DATABASE_USERNAME:tq_user}
     password: ${DATABASE_PASSWORD:change_me_locally}
     driver-class-name: org.postgresql.Driver
@@ -23,18 +23,25 @@ spring:
     init:
       mode: never
   mail:
-    host: ${MAIL_HOST:}
-    port: ${MAIL_PORT:587}
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
     username: ${MAIL_USERNAME:}
     password: ${MAIL_PASSWORD:}
     properties:
-      mail.smtp.auth: true
-      mail.smtp.starttls.enable: true
+      mail.smtp.auth: ${MAIL_AUTH:false}
+      mail.smtp.starttls.enable: ${MAIL_STARTTLS:false}
+      mail.smtp.connectiontimeout: 5000
+      mail.smtp.timeout: 5000
+      mail.smtp.writetimeout: 5000
 
 app:
   frontend-url: ${FRONTEND_URL:http://localhost:4200}
   mail:
+    enabled: ${MAIL_ENABLED:false}
     from: ${MAIL_FROM:no-reply@terraquantai.local}
+  storage:
+    local-root: ${FILE_STORAGE_PATH:../.private-storage}
+    max-file-size-bytes: 52428800
   bootstrap-admin:
     email: ${ADMIN_EMAIL:}
     password: ${ADMIN_PASSWORD:}
