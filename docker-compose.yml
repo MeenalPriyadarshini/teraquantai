@@ -1,4 +1,4 @@
-# Local PostgreSQL for TerraQuantAI development.
+# Local development services.
 services:
   postgres:
     image: postgres:17
@@ -12,3 +12,11 @@ services:
       - "${POSTGRES_PORT:-5433}:5432"
     volumes:
       - ./.docker-data/postgres:/var/lib/postgresql/data
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: tq-mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
