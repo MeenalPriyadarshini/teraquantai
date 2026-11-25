@@ -154,8 +154,8 @@ public class AuthController {
             ? "Verify your TerraQuantAI email"
             : "Reset your TerraQuantAI password";
         String action = "EMAIL_VERIFY".equals(type) ? "verify your email address" : "reset your password";
-        String body = "Hello,\\n\\nUse the following link to " + action + ":\\n"
-            + link + "\\n\\nThis link expires in " + expiryMinutes
+        String body = "Hello,\n\nUse the following link to " + action + ":\n"
+            + link + "\n\nThis link expires in " + expiryMinutes
             + " minutes and can be used only once. If you did not request this, ignore this email.";
         mailDeliveryService.send(email, subject, body);
     }
