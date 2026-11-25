@@ -29,3 +29,6 @@ backend/.gradle/
 # Generated backend output
 backend/bin/
 *.class
+
+# Private uploaded reports (never commit customer or product files)
+.private-storage/
