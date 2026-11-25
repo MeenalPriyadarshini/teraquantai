@@ -1,5 +1,4 @@
-# Local development services. Not needed for the frontend-only prototype phase;
-# it becomes useful when the Spring Boot backend starts (roadmap step P onward).
+# Local PostgreSQL for TerraQuantAI development.
 services:
   postgres:
     image: postgres:17
@@ -10,6 +9,6 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - "5433:5432"
+      - "${POSTGRES_PORT:-5433}:5432"
     volumes:
       - ./.docker-data/postgres:/var/lib/postgresql/data
