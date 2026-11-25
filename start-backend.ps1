@@ -27,9 +27,14 @@ $env:DATABASE_URL = "jdbc:postgresql://127.0.0.1:$($env:POSTGRES_PORT)/$($env:PO
 $env:DATABASE_USERNAME = $env:POSTGRES_USER
 $env:DATABASE_PASSWORD = $env:POSTGRES_PASSWORD
 if (!$env:FRONTEND_URL) { $env:FRONTEND_URL = "http://localhost:4200" }
+if (!$env:MAIL_ENABLED) { $env:MAIL_ENABLED = "true" }
+if (!$env:MAIL_HOST) { $env:MAIL_HOST = "127.0.0.1" }
+if (!$env:MAIL_PORT) { $env:MAIL_PORT = "1025" }
+if (!$env:MAIL_AUTH) { $env:MAIL_AUTH = "false" }
+if (!$env:MAIL_STARTTLS) { $env:MAIL_STARTTLS = "false" }
 
 Write-Host "Starting PostgreSQL..."
-docker compose up -d postgres
+docker compose up -d postgres mailpit
 if ($LASTEXITCODE -ne 0) { throw "Docker Compose could not start PostgreSQL. Check Docker Desktop." }
 
 Write-Host "Waiting for PostgreSQL to become ready..."
