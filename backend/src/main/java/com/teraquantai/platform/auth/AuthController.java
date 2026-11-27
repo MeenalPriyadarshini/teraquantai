@@ -112,17 +112,19 @@ public class AuthController {
 
     @PostMapping("/email/verification/resend")
     public MessageResponse resend(@Valid @RequestBody EmailRequest request) {
-        jdbc.query("select id from users where email=? and email_verified=false", rs -> {
-            if (rs.next()) issueToken(rs.getObject("id", UUID.class), "EMAIL_VERIFY", "verify-email");
-        }, request.email().trim().toLowerCase());
+        jdbc.query("select id from users where email=? and email_verified=false",
+            (rs, rowNum) -> rs.getObject("id", UUID.class), request.email().trim().toLowerCase())
+            .stream().findFirst()
+            .ifPresent(userId -> issueToken(userId, "EMAIL_VERIFY", "verify-email"));
         return new MessageResponse("If the account needs verification, a new link will be sent.");
     }
 
     @PostMapping("/password/forgot")
     public MessageResponse forgot(@Valid @RequestBody EmailRequest request) {
-        jdbc.query("select id from users where email=?", rs -> {
-            if (rs.next()) issueToken(rs.getObject("id", UUID.class), "PASSWORD_RESET", "reset-password");
-        }, request.email().trim().toLowerCase());
+        jdbc.query("select id from users where email=?",
+            (rs, rowNum) -> rs.getObject("id", UUID.class), request.email().trim().toLowerCase())
+            .stream().findFirst()
+            .ifPresent(userId -> issueToken(userId, "PASSWORD_RESET", "reset-password"));
         return new MessageResponse("If an account exists for that email, password reset instructions will be sent.");
     }
 
