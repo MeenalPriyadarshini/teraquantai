@@ -17,6 +17,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestHandler;
 
 @Configuration
 public class SecurityConfig {
@@ -54,7 +55,12 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http, DaoAuthenticationProvider provider) throws Exception {
         http.authenticationProvider(provider)
-            .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+            .csrf(csrf -> csrf
+                .csrfTokenRepository(
+                    CookieCsrfTokenRepository.withHttpOnlyFalse())
+                .csrfTokenRequestHandler(
+                    new SpaCsrfTokenRequestHandler()
+                ))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.GET, "/api/v1/health", "/api/v1/catalog/**").permitAll()
                 .requestMatchers("/api/v1/auth/**").permitAll()
