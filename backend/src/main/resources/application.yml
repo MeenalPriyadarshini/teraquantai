@@ -38,7 +38,11 @@ app:
   frontend-url: ${FRONTEND_URL:http://localhost:4200}
   mail:
     enabled: ${MAIL_ENABLED:false}
+    provider: ${MAIL_PROVIDER:smtp}
     from: ${MAIL_FROM:no-reply@terraquantai.local}
+    resend:
+      api-key: ${RESEND_API_KEY:}
+      base-url: ${RESEND_BASE_URL:https://api.resend.com}
   storage:
     local-root: ${FILE_STORAGE_PATH:../.private-storage}
     max-file-size-bytes: 52428800
