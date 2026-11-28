@@ -324,10 +324,9 @@ export class Admin {
   protected saveProduct(): void {
     this.error.set('');
     this.notice.set('');
-    if (this.form.priceRupees === null || this.form.priceRupees < 0) {
-      this.error.set('Enter a valid non-negative price. A zero-priced draft can be saved, but it cannot be published.');
-      if (this.form.priceRupees === null) this.form.priceRupees = 0;
-      if (this.form.priceRupees < 0) return;
+    if (this.form.priceRupees !== null && this.form.priceRupees < 0) {
+      this.error.set('Price cannot be negative. A zero-priced draft can be saved, but it cannot be published.');
+      return;
     }
     const body = {
       title: this.form.title.trim(), slug: this.form.slug.trim().toLowerCase(),
@@ -336,7 +335,7 @@ export class Admin {
       forecastStartDate: this.form.forecastStartDate || null,
       forecastEndDate: this.form.forecastEndDate || null,
       frequency: this.form.frequency.trim() || null,
-      pricePaise: Math.round(this.form.priceRupees * 100),
+      pricePaise: this.form.priceRupees === null ? null : Math.round(this.form.priceRupees * 100),
       format: this.form.format,
     };
     const id = this.editingId();
