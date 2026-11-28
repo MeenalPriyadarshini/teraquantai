@@ -233,15 +233,16 @@ const emptyProductForm = (): ProductForm => ({
             <p class="mt-1 text-sm text-ink-500">Manage the groups used in the public catalogue.</p>
             <form class="mt-4 space-y-3" (ngSubmit)="createCategory()">
               <input class="input-field w-full" name="categoryName" placeholder="Category name" required [(ngModel)]="newCategoryName">
-              <input class="input-field w-full" name="categorySlug" placeholder="category-slug" required pattern="[a-z0-9]+(-[a-z0-9]+)*" [(ngModel)]="newCategorySlug">
+              @if (!editingCategoryId()) { <input class="input-field w-full" name="categorySlug" placeholder="category-slug" required pattern="[a-z0-9]+(-[a-z0-9]+)*" [(ngModel)]="newCategorySlug"> }
               <input class="input-field w-full" name="categoryDescription" placeholder="Description (optional)" [(ngModel)]="newCategoryDescription">
-              <button type="submit" class="btn-outline w-full" [disabled]="savingCategory()">Add category</button>
+              <button type="submit" class="btn-outline w-full" [disabled]="savingCategory()">{{ editingCategoryId() ? "Save category" : "Add category" }}</button>
+              @if (editingCategoryId()) { <button type="button" class="w-full text-sm font-semibold text-brand-700" (click)="resetCategoryForm()">Cancel edit</button> }
             </form>
             <div class="mt-4 space-y-2">
               @for (category of categories(); track category.id) {
                 <div class="flex items-center justify-between gap-3 rounded-lg border border-slate-100 p-3">
                   <div><p class="text-sm font-semibold">{{ category.name }}</p><p class="text-xs text-ink-500">{{ category.slug }}</p></div>
-                  <button type="button" class="text-xs font-semibold text-brand-700" (click)="toggleCategory(category)">{{ category.active ? 'Deactivate' : 'Activate' }}</button>
+                  <div class="flex items-center gap-3"><button type="button" class="text-xs font-semibold text-brand-700" (click)="editCategory(category)">Edit</button><button type="button" class="text-xs font-semibold text-brand-700" (click)="toggleCategory(category)">{{ category.active ? 'Deactivate' : 'Activate' }}</button></div>
                 </div>
               }
             </div>
@@ -273,6 +274,7 @@ export class Admin {
   protected newCategoryName = '';
   protected newCategorySlug = '';
   protected newCategoryDescription = '';
+  protected readonly editingCategoryId = signal<string | null>(null);
 
   constructor() { this.refresh(); }
 
@@ -405,8 +407,8 @@ export class Admin {
     }, { withCredentials: true })).subscribe({
       next: () => {
         this.savingCategory.set(false);
-        this.newCategoryName = ''; this.newCategorySlug = ''; this.newCategoryDescription = '';
-        this.notice.set('Category created.');
+        this.resetCategoryForm();
+        this.notice.set(id ? 'Category updated.' : 'Category created.');
         this.refresh();
       },
       error: error => { this.savingCategory.set(false); this.showError(error, 'Could not create category.'); },
