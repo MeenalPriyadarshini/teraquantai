@@ -70,8 +70,16 @@ public class AdminController {
             jdbc.update("update categories set description=? where id=?", blankToNull((String) body.get("description")), id);
         if (body.containsKey("displayOrder"))
             jdbc.update("update categories set display_order=? where id=?", ((Number) body.get("displayOrder")).intValue(), id);
-        if (body.containsKey("active"))
-            jdbc.update("update categories set active=? where id=?", Boolean.TRUE.equals(body.get("active")), id);
+        if (body.containsKey("active")) {
+            boolean active = Boolean.TRUE.equals(body.get("active"));
+            if (!active) {
+                Long published = jdbc.queryForObject(
+                    "select count(*) from products where category_id=? and status='PUBLISHED'", Long.class, id);
+                if (published != null && published > 0)
+                    throw new IllegalArgumentException("Unpublish or archive this category's products before deactivating it.");
+            }
+            jdbc.update("update categories set active=? where id=?", active, id);
+        }
         return category(id);
     }
 
