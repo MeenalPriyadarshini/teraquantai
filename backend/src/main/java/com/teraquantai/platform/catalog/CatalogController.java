@@ -29,19 +29,20 @@ public class CatalogController {
             @RequestParam(required=false) String search) {
         int safePage = Math.max(0, page), safeSize = Math.min(100, Math.max(1, size));
         String term = search == null || search.isBlank() ? null : "%" + search.trim().toLowerCase() + "%";
-        String where = " from products p join categories c on c.id=p.category_id where p.status='PUBLISHED' "
-            + "and (? is null or c.slug=?) and (? is null or lower(p.title || ' ' || p.summary) like ?) ";
-        Long total = jdbc.queryForObject("select count(*)" + where, Long.class, category, category, term, term);
+        String joins = " from products p join categories c on c.id=p.category_id "
+            + "left join lateral (select file_format,version_number,created_at from product_versions "
+            + "where product_id=p.id order by version_number desc limit 1) v on true ";
+        String where = " where p.status='PUBLISHED' and (? is null or c.slug=?) "
+            + "and (? is null or lower(p.title || ' ' || p.summary) like ?) ";
+        Long total = jdbc.queryForObject("select count(*) from products p join categories c on c.id=p.category_id "
+            + where, Long.class, category, category, term, term);
         List<Map<String,Object>> content = jdbc.queryForList(
             "select p.id,p.slug,p.title,c.slug as \"categorySlug\",p.summary,p.market,"
             + "p.forecast_start_date as \"forecastStartDate\",p.forecast_end_date as \"forecastEndDate\","
             + "p.frequency,p.price_paise as \"pricePaise\",p.currency,"
             + "coalesce(v.file_format,p.file_format) as format,lower(p.status) as status,"
             + "v.version_number as \"versionNumber\",v.created_at as \"versionCreatedAt\" "
-            + where
-            + "left join lateral (select file_format,version_number,created_at from product_versions "
-            + "where product_id=p.id order by version_number desc limit 1) v on true "
-            + "order by p.published_at desc nulls last limit ? offset ?",
+            + joins + where + "order by p.published_at desc nulls last limit ? offset ?",
             category, category, term, term, safeSize, safePage * safeSize);
         long count = total == null ? 0 : total;
         return Map.of("content", content, "page", safePage, "size", safeSize,
