@@ -32,7 +32,7 @@ public class CatalogController {
         String joins = " from products p join categories c on c.id=p.category_id "
             + "left join lateral (select file_format,version_number,created_at from product_versions "
             + "where product_id=p.id order by version_number desc limit 1) v on true ";
-        String where = " where p.status='PUBLISHED' and (? is null or c.slug=?) "
+        String where = " where p.status='PUBLISHED' and c.active=true and (? is null or c.slug=?) "
             + "and (? is null or lower(p.title || ' ' || p.summary) like ?) ";
         Long total = jdbc.queryForObject("select count(*) from products p join categories c on c.id=p.category_id "
             + where, Long.class, category, category, term, term);
@@ -61,7 +61,7 @@ public class CatalogController {
             + "from products p join categories c on c.id=p.category_id "
             + "left join lateral (select file_format from product_versions where product_id=p.id "
             + "order by version_number desc limit 1) v on true "
-            + "where p.status='PUBLISHED' order by p.published_at desc nulls last limit ?",
+            + "where p.status='PUBLISHED' and c.active=true order by p.published_at desc nulls last limit ?",
             safeLimit);
     }
 
@@ -76,6 +76,6 @@ public class CatalogController {
             + "from products p join categories c on c.id=p.category_id "
             + "left join lateral (select file_format,version_number,created_at from product_versions "
             + "where product_id=p.id order by version_number desc limit 1) v on true "
-            + "where p.slug=? and p.status='PUBLISHED'", slug);
+            + "where p.slug=? and p.status='PUBLISHED' and c.active=true", slug);
     }
 }
