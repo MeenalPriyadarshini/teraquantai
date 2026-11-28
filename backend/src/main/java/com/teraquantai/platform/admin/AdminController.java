@@ -5,7 +5,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import java.io.IOException;
 import java.security.Principal;
-import java.sql.Date;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -15,7 +14,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/v1/admin")
@@ -144,7 +142,7 @@ public class AdminController {
     @Transactional
     public Map<String,Object> uploadInitialFile(@PathVariable UUID id, @RequestParam("file") MultipartFile file,
             @RequestParam(required=false) String changeSummary, Principal principal) throws IOException {
-        Map<String,Object> product = product(id);
+        product(id);
         Long versions = jdbc.queryForObject("select count(*) from product_versions where product_id=?", Long.class, id);
         if (versions != null && versions > 0)
             throw new IllegalArgumentException("This product already has a report. Use the add-version action for corrections.");
