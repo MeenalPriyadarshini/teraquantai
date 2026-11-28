@@ -13,9 +13,8 @@ import {
 
 /**
  * The catalogue is read through this service so pages do not depend on where
- * product data comes from. Mock mode is used until the Spring Boot API exists.
- *
- * Expected API endpoints are documented in docs/frontend-api-contract.md.
+ * product data comes from. Live API mode is enabled for the current implementation.
+ * Mock fixtures remain available for isolated frontend development.
  */
 @Injectable({ providedIn: 'root' })
 export class CatalogService {
