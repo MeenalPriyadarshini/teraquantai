@@ -399,19 +399,39 @@ export class Admin {
       });
   }
 
+  protected editCategory(category: AdminCategory): void {
+    this.editingCategoryId.set(category.id);
+    this.newCategoryName = category.name;
+    this.newCategorySlug = category.slug;
+    this.newCategoryDescription = category.description;
+  }
+
+  protected resetCategoryForm(): void {
+    this.editingCategoryId.set(null);
+    this.newCategoryName = '';
+    this.newCategorySlug = '';
+    this.newCategoryDescription = '';
+  }
+
   protected createCategory(): void {
     this.savingCategory.set(true);
-    this.withCsrf(() => this.http.post(`${this.baseUrl}/admin/categories`, {
-      name: this.newCategoryName.trim(), slug: this.newCategorySlug.trim().toLowerCase(),
-      description: this.newCategoryDescription.trim(), displayOrder: this.categories().length + 1,
-    }, { withCredentials: true })).subscribe({
+    const id = this.editingCategoryId();
+    const request = id
+      ? this.http.patch(`${this.baseUrl}/admin/categories/${id}`, {
+          name: this.newCategoryName.trim(), description: this.newCategoryDescription.trim(),
+        }, { withCredentials: true })
+      : this.http.post(`${this.baseUrl}/admin/categories`, {
+          name: this.newCategoryName.trim(), slug: this.newCategorySlug.trim().toLowerCase(),
+          description: this.newCategoryDescription.trim(), displayOrder: this.categories().length + 1,
+        }, { withCredentials: true });
+    this.withCsrf(() => request).subscribe({
       next: () => {
         this.savingCategory.set(false);
         this.resetCategoryForm();
         this.notice.set(id ? 'Category updated.' : 'Category created.');
         this.refresh();
       },
-      error: error => { this.savingCategory.set(false); this.showError(error, 'Could not create category.'); },
+      error: error => { this.savingCategory.set(false); this.showError(error, 'Could not save category.'); },
     });
   }
 
