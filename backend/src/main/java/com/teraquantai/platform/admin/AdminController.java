@@ -1,6 +1,7 @@
 package com.teraquantai.platform.admin;
 
 import com.teraquantai.platform.storage.PrivateFileStorage;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import java.io.IOException;
 import java.security.Principal;
@@ -49,7 +50,7 @@ public class AdminController {
 
     @PostMapping("/categories")
     @ResponseStatus(HttpStatus.CREATED)
-    public Map<String,Object> createCategory(@RequestBody CategoryRequest request) {
+    public Map<String,Object> createCategory(@Valid @RequestBody CategoryRequest request) {
         String slug = normalizeSlug(request.slug());
         UUID id = UUID.randomUUID();
         jdbc.update("insert into categories(id,slug,name,description,display_order,active) values (?,?,?,?,?,true)",
@@ -102,7 +103,7 @@ public class AdminController {
     @PostMapping("/products")
     @ResponseStatus(HttpStatus.CREATED)
     @Transactional
-    public Map<String,Object> createProduct(@RequestBody ProductRequest request) {
+    public Map<String,Object> createProduct(@Valid @RequestBody ProductRequest request) {
         validateProduct(request);
         UUID categoryId = jdbc.queryForObject("select id from categories where slug=? and active=true",
             UUID.class, request.categorySlug().trim());
@@ -118,7 +119,7 @@ public class AdminController {
 
     @PatchMapping("/products/{id}")
     @Transactional
-    public Map<String,Object> updateProduct(@PathVariable UUID id, @RequestBody ProductRequest request) {
+    public Map<String,Object> updateProduct(@PathVariable UUID id, @Valid @RequestBody ProductRequest request) {
         product(id);
         validateProduct(request);
         UUID categoryId = jdbc.queryForObject("select id from categories where slug=? and active=true",
@@ -230,6 +231,9 @@ public class AdminController {
 
     private void validateProduct(ProductRequest request) {
         if (request == null) throw new IllegalArgumentException("Product details are required.");
+        if (request.title() == null || request.title().isBlank()) throw new IllegalArgumentException("Product title is required.");
+        if (request.summary() == null || request.summary().isBlank()) throw new IllegalArgumentException("Product summary is required.");
+        if (request.categorySlug() == null || request.categorySlug().isBlank()) throw new IllegalArgumentException("Choose a product category.");
         if (request.pricePaise() != null && request.pricePaise() < 0)
             throw new IllegalArgumentException("Price cannot be negative.");
         if (request.forecastStartDate() != null && request.forecastEndDate() != null
