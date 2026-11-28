@@ -27,7 +27,12 @@ export class CatalogService {
       return of(CATEGORIES);
     }
 
-    return this.http.get<Category[]>(`${this.baseUrl}/catalog/categories`);
+    return this.http.get<Array<Pick<Category, 'slug' | 'name' | 'blurb'>>>(`${this.baseUrl}/catalog/categories`).pipe(
+      map(items => items.map(item => {
+        const visual = CATEGORIES.find(category => category.slug === item.slug);
+        return { ...visual, ...item, icon: visual?.icon ?? 'chart', tint: visual?.tint ?? 'from-slate-50 to-slate-100', iconColor: visual?.iconColor ?? 'text-brand-600' };
+      })),
+    );
   }
 
   getProducts(query: CatalogQuery = {}): Observable<Product[]> {
@@ -55,7 +60,7 @@ export class CatalogService {
 
     return this.http
       .get<PageResponse<Product>>(`${this.baseUrl}/catalog/products`, { params })
-      .pipe(map((response) => response.content));
+      .pipe(map((response) => response.content.map(product => this.normalizeProduct(product))));
   }
 
   getFeaturedProducts(limit = 6): Observable<Product[]> {
@@ -64,7 +69,14 @@ export class CatalogService {
     }
 
     const params = new HttpParams().set('limit', String(limit));
-    return this.http.get<Product[]>(`${this.baseUrl}/catalog/products/featured`, { params });
+    return this.http.get<Product[]>(`${this.baseUrl}/catalog/products/featured`, { params })
+      .pipe(map(products => products.map(product => this.normalizeProduct(product))));
+  }
+
+  private normalizeProduct(product: Product): Product {
+    const period = product.period || (product.forecastStartDate && product.forecastEndDate
+      ? `${product.forecastStartDate} – ${product.forecastEndDate}` : undefined);
+    return { ...product, period };
   }
 
   getProduct(slug: string): Observable<Product | undefined> {
@@ -74,7 +86,7 @@ export class CatalogService {
 
     return this.http
       .get<Product>(`${this.baseUrl}/catalog/products/${encodeURIComponent(slug)}`)
-      .pipe(
+      .pipe(map(product => this.normalizeProduct(product)),
         catchError((error: HttpErrorResponse) => {
           if (error.status === 404) {
             return of(undefined);
