@@ -1,10 +1,8 @@
 package com.teraquantai.platform.storage;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,7 +23,7 @@ public class PrivateFileStorage {
         Files.createDirectories(this.root);
     }
 
-    /** Stores a validated report outside the public frontend directory and returns its opaque key. */
+    /** Stores validated PDF/PPT/PPTX bytes outside the public frontend directory. */
     public String store(MultipartFile file) throws IOException {
         if (file == null || file.isEmpty()) throw new IllegalArgumentException("A report file is required.");
         if (file.getSize() > maxBytes) throw new IllegalArgumentException("The report exceeds the configured file-size limit.");
@@ -36,13 +34,15 @@ public class PrivateFileStorage {
             throw new IllegalArgumentException("Only PDF, PPT and PPTX files are accepted.");
         }
 
+        byte[] bytes = file.getBytes();
+        if (!hasExpectedSignature(extension, bytes)) {
+            throw new IllegalArgumentException("The uploaded file content does not match its file extension.");
+        }
+
         String key = UUID.randomUUID() + "." + extension;
         Path destination = root.resolve(key).normalize();
         if (!destination.getParent().equals(root)) throw new SecurityException("Invalid storage key.");
-
-        try (InputStream input = file.getInputStream()) {
-            Files.copy(input, destination, StandardCopyOption.REPLACE_EXISTING);
-        }
+        Files.write(destination, bytes);
         return key;
     }
 
@@ -54,6 +54,22 @@ public class PrivateFileStorage {
         Path resolved = root.resolve(storageKey).normalize();
         if (!resolved.getParent().equals(root)) throw new SecurityException("Invalid storage key.");
         return resolved;
+    }
+
+    private boolean hasExpectedSignature(String extension, byte[] bytes) {
+        if ("pdf".equals(extension)) {
+            return bytes.length >= 5 && bytes[0] == '%' && bytes[1] == 'P'
+                && bytes[2] == 'D' && bytes[3] == 'F' && bytes[4] == '-';
+        }
+        if ("ppt".equals(extension)) {
+            return bytes.length >= 8 && (bytes[0] & 0xff) == 0xD0
+                && (bytes[1] & 0xff) == 0xCF && (bytes[2] & 0xff) == 0x11
+                && (bytes[3] & 0xff) == 0xE0 && (bytes[4] & 0xff) == 0xA1
+                && (bytes[5] & 0xff) == 0xB1 && (bytes[6] & 0xff) == 0x1A
+                && (bytes[7] & 0xff) == 0xE1;
+        }
+        return bytes.length >= 4 && bytes[0] == 'P' && bytes[1] == 'K'
+            && bytes[2] == 3 && bytes[3] == 4;
     }
 
     private String extensionOf(String filename) {
