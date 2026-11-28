@@ -43,6 +43,7 @@
             <span class="absolute -right-1 -top-1 grid min-w-5 place-items-center rounded-full bg-brand-800 px-1 text-[11px] font-bold leading-5 text-white">{{ cart.count() }}</span>
           }
         </a>
+        @if (auth.isAdmin()) { <a routerLink="/admin" class="btn-outline hidden px-4! py-2.5! sm:inline-flex">Admin</a> }
         <a routerLink="/login" class="btn-primary px-5! py-2.5!">Login</a>
         <button type="button" (click)="toggle()" [attr.aria-expanded]="menuOpen()" aria-controls="mobile-menu"
                 aria-label="Toggle menu"
@@ -56,6 +57,7 @@
     @if (menuOpen()) {
       <nav id="mobile-menu" aria-label="Mobile" class="mt-2 rounded-3xl bg-white p-3 shadow-card ring-1 ring-brand-100 lg:hidden">
         <ul class="space-y-1">
+          @if (auth.isAdmin()) { <li><a routerLink="/admin" (click)="close()" class="block rounded-xl px-4 py-3 text-sm font-semibold text-brand-800 hover:bg-brand-50">Admin dashboard</a></li> }
           @for (item of nav; track item.label) {
             <li>
               <a [routerLink]="item.path" (click)="close()" routerLinkActive="bg-brand-50 text-brand-800"
