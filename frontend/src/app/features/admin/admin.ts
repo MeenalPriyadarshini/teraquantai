@@ -327,7 +327,7 @@ export class Admin {
     if (this.form.priceRupees === null || this.form.priceRupees < 0) {
       this.error.set('Enter a valid non-negative price. A zero-priced draft can be saved, but it cannot be published.');
       if (this.form.priceRupees === null) this.form.priceRupees = 0;
-      return;
+      if (this.form.priceRupees < 0) return;
     }
     const body = {
       title: this.form.title.trim(), slug: this.form.slug.trim().toLowerCase(),
