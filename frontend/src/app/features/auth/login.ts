@@ -82,7 +82,7 @@ export class Login {
         const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
         const safeReturnUrl = returnUrl?.startsWith('/') && !returnUrl.startsWith('//')
           ? returnUrl
-          : '/account';
+          : user.role === 'ADMIN' ? '/admin' : '/account';
         this.router.navigateByUrl(safeReturnUrl);
       },
       error: (err: { error?: { message?: string } }) => {
